@@ -235,11 +235,10 @@
 
 // export default App;
 
-//above code works
+// above code works
 
 import React, { useRef, useState } from "react";
 import { DndContext, useDraggable, useDroppable } from "@dnd-kit/core";
-import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { CSS } from "@dnd-kit/utilities";
 import { FiX } from "react-icons/fi";
 import "./style.css";
@@ -247,6 +246,7 @@ import {
   SortableContext,
   useSortable,
   rectSortingStrategy,
+  verticalListSortingStrategy,
   arrayMove,
 } from "@dnd-kit/sortable";
 
@@ -272,13 +272,7 @@ const CanvasItem = ({ item, onRemoveItem, hideOnDrag }) => {
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      className="canvas-item"
-    >
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
       <span>{item.name}</span>
       <button onMouseDown={handleMouseDown}>
         <FiX />
@@ -289,8 +283,11 @@ const CanvasItem = ({ item, onRemoveItem, hideOnDrag }) => {
 
 const Canvas = ({ items, onRemoveItem, hideOnDrag }) => {
   return (
-    <SortableContext items={items.map((item) => item.instanceId.toString())}>
-      <div className="canvas">
+    <div className="canvas">
+      <SortableContext
+        items={items.map((item) => item.instanceId.toString())}
+        strategy={verticalListSortingStrategy}
+      >
         {items.map((item) => (
           <CanvasItem
             key={item.instanceId}
@@ -299,8 +296,8 @@ const Canvas = ({ items, onRemoveItem, hideOnDrag }) => {
             hideOnDrag={hideOnDrag}
           />
         ))}
-      </div>
-    </SortableContext>
+      </SortableContext>
+    </div>
   );
 };
 
@@ -383,15 +380,30 @@ const App = () => {
   };
 
   const handleDrop = (event) => {
-    // console.log("drop event");
-    // console.log(event);
     const { active, over } = event;
+
+    console.log("active");
+    console.log(active);
+    console.log("over");
+    console.log(over);
 
     if (over?.id === "trash")
       setCanvasItems((items) =>
         items.filter((item) => item.instanceId !== Number(active?.id))
       );
-    else {
+    else if (over && active.id !== over?.id) {
+      console.log("moving withing the canvas");
+
+      setCanvasItems((items) => {
+        const oldIndex = items.findIndex(
+          (item) => item.instanceId === Number(active.id)
+        );
+        const newIndex = items.findIndex(
+          (item) => item.instanceId === Number(over?.id)
+        );
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    } else {
       const item = itemList.find(
         (item) => item.id.toString() === active?.id.toString()
       );
@@ -404,8 +416,6 @@ const App = () => {
 
   function handleDragOver(e) {
     const { active, over } = e;
-    // console.log("drag over event");
-    // console.log(e);
 
     if (over == null) {
       return;
@@ -424,10 +434,6 @@ const App = () => {
   return (
     <div className="container">
       <DndContext onDragEnd={handleDrop} onDragOver={handleDragOver}>
-        {/* <div className="item-list-container">
-          <h2>Item List</h2>
-          <ItemList items={itemList} />
-        </div> */}
         <div className="side-by-side-container">
           <div className="item-list-container">
             <h2>Item List</h2>
@@ -448,14 +454,9 @@ const App = () => {
             hideOnDrag={draggedOverTrash}
           />
         </div>
-
-        {/* <h1>Trash</h1>
-        <Trash items={itemList} /> */}
       </DndContext>
     </div>
   );
 };
 
 export default App;
-
-// sorting code above but delete does not work
