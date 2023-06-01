@@ -1,0 +1,16 @@
+.side-by-side-container {
+    display: flex;
+}
+
+.item-list-container {
+    flex: 1;
+    margin-right: 10px;
+}
+
+.trash-container {
+    flex: 1;
+}
+
+.container{
+    background-color:burlywood;
+}
