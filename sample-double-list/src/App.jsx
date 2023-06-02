@@ -21,6 +21,7 @@ const itemList = [
 const CanvasItem = ({ item, onRemoveItem, hideOnDrag }) => {
   const handleMouseDown = (e) => {
     e.preventDefault();
+    console.log(item.instanceId);
     onRemoveItem(item.instanceId);
   };
   const { attributes, listeners, setNodeRef, transform, isDragging } =
@@ -55,21 +56,19 @@ const CanvasItem = ({ item, onRemoveItem, hideOnDrag }) => {
 
 const Canvas = ({ items, onRemoveItem, hideOnDrag }) => {
   return (
-    <div className="canvas">
-      <SortableContext
-        items={items.map((item) => item.instanceId.toString())}
-        strategy={verticalListSortingStrategy}
-      >
-        {items.map((item) => (
-          <CanvasItem
-            key={item.instanceId}
-            item={item}
-            onRemoveItem={onRemoveItem}
-            hideOnDrag={hideOnDrag}
-          />
-        ))}
-      </SortableContext>
-    </div>
+    <SortableContext
+      items={items.map((item) => item.id.toString())}
+      strategy={verticalListSortingStrategy}
+    >
+      {items.map((item) => (
+        <CanvasItem
+          key={item.instanceId}
+          item={item}
+          onRemoveItem={onRemoveItem}
+          hideOnDrag={hideOnDrag}
+        />
+      ))}
+    </SortableContext>
   );
 };
 
@@ -134,9 +133,43 @@ const Trash = () => {
   );
 };
 
+const NewCanvas = ({ items, onRemoveItem, hideOnDrag }) => {
+  const { setNodeRef, isOver } = useDroppable({ id: "newCanvas" });
+  // console.log(items);
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        width: "100%",
+        minHeight: "500px",
+        backgroundColor: isOver ? "blue" : "grey",
+      }}
+    >
+      {/* <Canvas
+        items={items}
+        onRemoveItem={onRemoveItem}
+        hideOnDrag={hideOnDrag}
+      /> */}
+      <SortableContext
+        items={items.map((item) => item.id.toString())}
+        strategy={verticalListSortingStrategy}
+      >
+        {items.map((item) => (
+          <CanvasItem
+            key={item.instanceId}
+            item={item}
+            onRemoveItem={onRemoveItem}
+            hideOnDrag={hideOnDrag}
+          />
+        ))}
+      </SortableContext>
+    </div>
+  );
+};
+
 const App = () => {
   const [canvasItems, setCanvasItems] = useState([]);
-  //console.log(canvasItems);
+  console.log(canvasItems);
   const [draggedOverTrash, setDraggedOverTrash] = useState(false);
 
   const addItemToCanvas = (item) => {
@@ -146,9 +179,10 @@ const App = () => {
 
   const removeItemFromCanvas = (itemId) => {
     //console.log(itemId);
-    setCanvasItems((prevItems) =>
-      prevItems.filter((item) => item.instanceId !== Number(itemId))
-    );
+    setCanvasItems((prevItems) => {
+      console.log(prevItems);
+      return prevItems.filter((item) => item.instanceId !== Number(itemId));
+    });
   };
 
   const handleDrop = (event) => {
@@ -160,10 +194,18 @@ const App = () => {
     console.log(over);
 
     if (over?.id === "trash")
-      setCanvasItems((items) =>
-        items.filter((item) => item.instanceId !== Number(active?.id))
+      setCanvasItems((items) => {
+        return items.filter((item) => item.instanceId !== Number(active?.id));
+      });
+    if (over?.id === "newCanvas") {
+      const item = itemList.find(
+        (item) => item.id.toString() === active?.id.toString()
       );
-    else if (over && active.id !== over?.id) {
+
+      if (item) {
+        addItemToCanvas(item);
+      }
+    } else if (over?.id !== "trash" && over && active.id !== over?.id) {
       console.log("moving withing the canvas");
 
       setCanvasItems((items) => {
@@ -175,27 +217,19 @@ const App = () => {
         );
         return arrayMove(items, oldIndex, newIndex);
       });
-    } else {
-      const item = itemList.find(
-        (item) => item.id.toString() === active?.id.toString()
-      );
-
-      if (item) {
-        addItemToCanvas(item);
-      }
     }
   };
 
   function handleDragOver(e) {
     const { active, over } = e;
-
+    console.log(e);
     if (over == null) {
       return;
     }
   }
 
   const { isOver, setNodeRef } = useDroppable({
-    onDrop: handleDrop,
+    id: "canvas",
   });
 
   const dropStyle = {
@@ -219,13 +253,11 @@ const App = () => {
         </div>
 
         <h1>Canvas</h1>
-        <div ref={setNodeRef} style={dropStyle} className="canvas-container">
-          <Canvas
-            items={canvasItems}
-            onRemoveItem={removeItemFromCanvas}
-            hideOnDrag={draggedOverTrash}
-          />
-        </div>
+        <NewCanvas
+          items={canvasItems}
+          onRemoveItem={removeItemFromCanvas}
+          hideOnDrag={draggedOverTrash}
+        />
       </DndContext>
     </div>
   );

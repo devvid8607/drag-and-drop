@@ -1,0 +1,40 @@
+.side-by-side-container {
+    display: flex;
+}
+
+.item-list-container {
+    flex: 1;
+    margin-right: 10px;
+}
+
+.trash-container {
+    flex: 1;
+}
+
+.container {
+    background-color: burlywood;
+}
+.canvas {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    min-height: 200px;
+    border: 1px solid #ccc;
+    padding: 10px;
+}
+
+.canvas-over {
+    background-color: lightblue;
+}
+.drag-over-trash {
+
+    box-shadow: 0 0 5px rgba(255, 0, 0, 0.7);
+
+
+    background-color: rgba(255, 0, 0, 0.3);
+
+
+    border: 2px dashed rgba(255, 0, 0, 0.7);
+
+
+}
