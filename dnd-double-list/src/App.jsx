@@ -1,5 +1,11 @@
-import React, { useRef, useState } from "react";
-import { DndContext, useDraggable, useDroppable } from "@dnd-kit/core";
+import React, { useRef, useState, useEffect } from "react";
+import {
+  DndContext,
+  useDraggable,
+  useDroppable,
+  useSensor,
+  MouseSensor,
+} from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { FiX } from "react-icons/fi";
 import "./style.css";
@@ -175,6 +181,9 @@ const NewCanvas = ({ items, onRemoveItem, hideOnDrag }) => {
         width: "100%",
         minHeight: "500px",
         backgroundColor: isOver ? "blue" : "wheat",
+        display: "flex",
+        gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+        gap: "10px",
       }}
     >
       {/* <Canvas
@@ -184,7 +193,7 @@ const NewCanvas = ({ items, onRemoveItem, hideOnDrag }) => {
       /> */}
       <SortableContext
         items={items.map((item) => item.id.toString())}
-        strategy={verticalListSortingStrategy}
+        strategy={rectSortingStrategy}
       >
         {items.map((item) => (
           <CanvasItem
@@ -201,11 +210,14 @@ const NewCanvas = ({ items, onRemoveItem, hideOnDrag }) => {
 
 const App = () => {
   const [canvasItems, setCanvasItems] = useState([]);
+
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   // console.log(canvasItems);
   const [draggedOverTrash, setDraggedOverTrash] = useState(false);
 
   const addItemToCanvas = (item) => {
-    console.log(item);
+    // console.log(item);
+    // const newItem = { ...item, instanceId: Date.now() };
     const newItem = { ...item, instanceId: Date.now() };
     setCanvasItems((prevItems) => [...prevItems, newItem]);
   };
@@ -221,17 +233,18 @@ const App = () => {
   const handleDrop = (event) => {
     const { active, over } = event;
 
-    console.log("active");
-    console.log(active);
-    console.log("over");
-    console.log(over);
+    // console.log("active");
+    // console.log(active);
+    // console.log("over");
+    // console.log(over);
 
     if (over?.id === "trash")
       setCanvasItems((items) => {
         return items.filter((item) => item.instanceId !== Number(active?.id));
       });
     if (over?.id === "newCanvas") {
-      console.log(active?.data?.current?.parent);
+      console.log(over);
+      // console.log(active?.data?.current?.parent);
       const listname = active?.data?.current?.parent;
       let arr = [];
       if (listname === "itemList2") {
